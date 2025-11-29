@@ -96,20 +96,15 @@ export const guest = (() => {
         const interval = 6000;
         const slides = document.querySelectorAll('.slide-desktop');
 
-        if (!slides || slides.length === 0) {
-            return;
-        }
+        if (!slides || slides.length === 0) return;
 
         const desktopEl = document.getElementById('root')?.querySelector('.d-sm-block');
-        if (!desktopEl) {
-            return;
-        }
+        if (!desktopEl) return;
 
+        // Stop trước các slideshow đang chạy
         desktopEl.dispatchEvent(new Event('undangan.slide.stop'));
 
-        if (window.getComputedStyle(desktopEl).display === 'none') {
-            return;
-        }
+        if (window.getComputedStyle(desktopEl).display === 'none') return;
 
         if (slides.length === 1) {
             await util.changeOpacity(slides[0], true);
@@ -117,33 +112,52 @@ export const guest = (() => {
         }
 
         let index = 0;
-        for (const [i, s] of slides.entries()) {
-            if (i === index) {
-                s.classList.add('slide-desktop-active');
-                await util.changeOpacity(s, true);
-                break;
-            }
-        }
+        const slidesPerView = 2; // hiển thị 2 slide cùng lúc
+
+        // Hiển thị initial slides cùng lúc
+        await Promise.all(
+            Array.from({ length: slidesPerView }).map((_, i) => {
+                const idx = (index + i) % slides.length;
+                slides[idx].classList.add('slide-desktop-active');
+                return util.changeOpacity(slides[idx], true);
+            })
+        );
 
         let run = true;
+
         const nextSlide = async () => {
-            await util.changeOpacity(slides[index], false);
-            slides[index].classList.remove('slide-desktop-active');
+            // Ẩn slides hiện tại cùng lúc
+            await Promise.all(
+                Array.from({ length: slidesPerView }).map((_, i) => {
+                    const idx = (index + i) % slides.length;
+                    slides[idx].classList.remove('slide-desktop-active');
+                    return util.changeOpacity(slides[idx], false);
+                })
+            );
 
-            index = (index + 1) % slides.length;
+            // Cập nhật index cho slides tiếp theo
+            index = (index + slidesPerView) % slides.length;
 
+            // Hiển thị slides tiếp theo cùng lúc
             if (run) {
-                slides[index].classList.add('slide-desktop-active');
-                await util.changeOpacity(slides[index], true);
+                await Promise.all(
+                    Array.from({ length: slidesPerView }).map((_, i) => {
+                        const idx = (index + i) % slides.length;
+                        slides[idx].classList.add('slide-desktop-active');
+                        return util.changeOpacity(slides[idx], true);
+                    })
+                );
             }
 
             return run;
         };
 
+        // Event stop slideshow
         desktopEl.addEventListener('undangan.slide.stop', () => {
             run = false;
         });
 
+        // Loop slideshow
         const loop = async () => {
             if (await nextSlide()) {
                 util.timeOut(loop, interval);
@@ -152,6 +166,8 @@ export const guest = (() => {
 
         util.timeOut(loop, interval);
     };
+
+
 
     /**
      * @param {HTMLButtonElement} button

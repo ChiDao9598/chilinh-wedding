@@ -53,6 +53,13 @@
 .slide-desktop {
     transform: scale(1);
     transition: transform 10s linear;
+    display: flex;
+}
+.slide-desktop:nth-child(odd) {
+    justify-content: left;
+}
+.slide-desktop:nth-child(even) {
+    justify-content: right;
 }
 
 .slide-desktop-active {
