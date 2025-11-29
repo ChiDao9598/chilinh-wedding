@@ -102,7 +102,7 @@ export const guest = (() => {
         if (!desktopEl) return;
 
         // Stop trước các slideshow đang chạy
-        desktopEl.dispatchEvent(new Event('undangan.slide.stop'));
+        desktopEl.dispatchEvent(new Event('invitation.slide.stop'));
 
         if (window.getComputedStyle(desktopEl).display === 'none') return;
 
@@ -153,7 +153,7 @@ export const guest = (() => {
         };
 
         // Event stop slideshow
-        desktopEl.addEventListener('undangan.slide.stop', () => {
+        desktopEl.addEventListener('invitation.slide.stop', () => {
             run = false;
         });
 
@@ -188,7 +188,7 @@ export const guest = (() => {
         confetti.basicAnimation();
         util.timeOut(confetti.openAnimation, 1500);
 
-        document.dispatchEvent(new Event('undangan.open'));
+        document.dispatchEvent(new Event('invitation.open'));
         util.changeOpacity(document.getElementById('welcome'), false).then((el) => el.remove());
     };
 
@@ -349,7 +349,7 @@ export const guest = (() => {
         const params = new URLSearchParams(window.location.search);
 
         window.addEventListener('resize', util.debounce(slide));
-        document.addEventListener('undangan.progress.done', () => booting());
+        document.addEventListener('invitation.progress.done', () => booting());
         document.addEventListener('hide.bs.modal', () => document.activeElement?.blur());
         document.getElementById('button-modal-download').addEventListener('click', (e) => {
             img.download(e.currentTarget.getAttribute('data-src'));
@@ -377,7 +377,7 @@ export const guest = (() => {
             }
 
             session.guest(params.get('k') ?? token).then(({ data }) => {
-                document.dispatchEvent(new Event('undangan.session'));
+                document.dispatchEvent(new Event('invitation.session'));
                 progress.complete('config');
 
                 if (img.hasDataSrc()) {

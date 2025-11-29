@@ -36,7 +36,7 @@ export const comment = (() => {
      */
     const onNullComment = () => {
         const desc = lang
-            .on('id', '📢 Yuk, share undangan ini biar makin rame komentarnya! 🎉')
+            .on('id', '📢 Yuk, share invitation ini biar makin rame komentarnya! 🎉')
             .on('en', '📢 Let\'s share this invitation to get more comments! 🎉')
             .get();
 
@@ -239,14 +239,14 @@ export const comment = (() => {
                 return res;
             })
             .then(async (res) => {
-                comments.dispatchEvent(new Event('undangan.comment.result'));
+                comments.dispatchEvent(new Event('invitation.comment.result'));
 
                 if (res.data.lists && session.isAdmin()) {
                     await Promise.all(res.data.lists.map((v) => fetchTracker(v)));
                 }
 
                 pagination.setTotal(res.data.count);
-                comments.dispatchEvent(new Event('undangan.comment.done'));
+                comments.dispatchEvent(new Event('invitation.comment.done'));
                 return res;
             });
     };
@@ -283,7 +283,7 @@ export const comment = (() => {
             return;
         }
 
-        document.querySelectorAll('a[onclick="undangan.comment.showOrHide(this)"]').forEach((n) => {
+        document.querySelectorAll('a[onclick="invitation.comment.showOrHide(this)"]').forEach((n) => {
             const oldUuids = n.getAttribute('data-uuids').split(',');
 
             if (oldUuids.includes(id)) {
@@ -341,7 +341,7 @@ export const comment = (() => {
             form.disabled = true;
         }
 
-        const cancel = document.querySelector(`[onclick="undangan.comment.cancel(this, '${id}')"]`);
+        const cancel = document.querySelector(`[onclick="invitation.comment.cancel(this, '${id}')"]`);
         if (cancel) {
             cancel.disabled = true;
         }
@@ -384,7 +384,7 @@ export const comment = (() => {
         removeInnerForm(id);
 
         if (!gifIsOpen) {
-            const showButton = document.querySelector(`[onclick="undangan.comment.showMore(this, '${id}')"]`);
+            const showButton = document.querySelector(`[onclick="invitation.comment.showMore(this, '${id}')"]`);
 
             const content = document.getElementById(`content-${id}`);
             content.setAttribute('data-comment', util.base64Encode(form.value));
@@ -472,7 +472,7 @@ export const comment = (() => {
             form.disabled = true;
         }
 
-        const cancel = document.querySelector(`[onclick="undangan.comment.cancel(this, '${id}')"]`);
+        const cancel = document.querySelector(`[onclick="invitation.comment.cancel(this, '${id}')"]`);
         if (cancel) {
             cancel.disabled = true;
         }
@@ -672,7 +672,7 @@ export const comment = (() => {
         pagination.init();
 
         comments = document.getElementById('comments');
-        comments.addEventListener('undangan.comment.show', show);
+        comments.addEventListener('invitation.comment.show', show);
 
         owns = storage('owns');
         showHide = storage('comment');

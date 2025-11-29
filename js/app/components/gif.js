@@ -63,7 +63,7 @@ export const gif = (() => {
             const res = (uri) => {
                 el.insertAdjacentHTML('beforeend', `
                 <figure class="hover-wrapper m-0 position-relative">
-                    <button onclick="undangan.comment.gif.click(this, '${ctx.uuid}', '${id}', '${util.base64Encode(url)}')" class="btn hover-area position-absolute justify-content-center align-items-center top-0 end-0 bg-overlay-auto p-1 m-1 rounded-circle border shadow-sm z-1">
+                    <button onclick="invitation.comment.gif.click(this, '${ctx.uuid}', '${id}', '${util.base64Encode(url)}')" class="btn hover-area position-absolute justify-content-center align-items-center top-0 end-0 bg-overlay-auto p-1 m-1 rounded-circle border shadow-sm z-1">
                         <i class="fa-solid fa-circle-check"></i>
                     </button>
                     <img src="${uri}" class="img-fluid" alt="${util.escapeHtml(description)}" style="width: 100%;">
@@ -161,7 +161,7 @@ export const gif = (() => {
     const render = (uuid, path, params) => {
         params = {
             media_filter: 'tinygif',
-            client_key: 'undangan_app',
+            client_key: 'invitation_app',
             key: config.get('tenor_key'),
             country: lang.getCountry(),
             locale: lang.getLocale(),
@@ -222,7 +222,7 @@ export const gif = (() => {
         <label for="gif-search-${uuid}" class="form-label my-1"><i class="fa-solid fa-photo-film me-2"></i>Gif</label>
 
         <div class="d-flex mb-3" id="gif-search-nav-${uuid}">
-            <button class="btn btn-secondary btn-sm rounded-4 shadow-sm me-1 my-1" onclick="undangan.comment.gif.back(this, '${uuid}')" data-offline-disabled="false"><i class="fa-solid fa-arrow-left"></i></button>
+            <button class="btn btn-secondary btn-sm rounded-4 shadow-sm me-1 my-1" onclick="invitation.comment.gif.back(this, '${uuid}')" data-offline-disabled="false"><i class="fa-solid fa-arrow-left"></i></button>
             <input dir="auto" type="text" name="gif-search" id="gif-search-${uuid}" autocomplete="on" class="form-control shadow-sm rounded-4" placeholder="Search for a GIF on Tenor" data-offline-disabled="false">
         </div>
 
@@ -237,7 +237,7 @@ export const gif = (() => {
         </div>
 
         <figure class="d-flex m-0 position-relative" id="gif-result-${uuid}">
-            <button onclick="undangan.comment.gif.cancel('${uuid}')" id="gif-cancel-${uuid}" class="btn d-none position-absolute justify-content-center align-items-center top-0 end-0 bg-overlay-auto p-2 m-0 rounded-circle border shadow-sm z-1">
+            <button onclick="invitation.comment.gif.cancel('${uuid}')" id="gif-cancel-${uuid}" class="btn d-none position-absolute justify-content-center align-items-center top-0 end-0 bg-overlay-auto p-2 m-0 rounded-circle border shadow-sm z-1">
                 <i class="fa-solid fa-circle-xmark"></i>
             </button>
         </figure>`;
@@ -495,7 +495,7 @@ export const gif = (() => {
      * @param {string} uuid 
      * @returns {void}
      */
-    const removeButtonBack = (uuid) => document.querySelector(`[onclick="undangan.comment.gif.back(this, '${uuid}')"]`)?.remove();
+    const removeButtonBack = (uuid) => document.querySelector(`[onclick="invitation.comment.gif.back(this, '${uuid}')"]`)?.remove();
 
     /**
      * @param {string} uuid 
@@ -527,7 +527,7 @@ export const gif = (() => {
      * @returns {void}
      */
     const showButton = () => {
-        document.querySelector('[onclick="undangan.comment.gif.open(undangan.comment.gif.default)"]')?.classList.toggle('d-none', !config.get('tenor_key'));
+        document.querySelector('[onclick="invitation.comment.gif.open(invitation.comment.gif.default)"]')?.classList.toggle('d-none', !config.get('tenor_key'));
     };
 
     /**
@@ -538,7 +538,7 @@ export const gif = (() => {
         objectPool = new Map();
         eventListeners = new Map();
         config = storage('config');
-        document.addEventListener('undangan.session', showButton);
+        document.addEventListener('invitation.session', showButton);
     };
 
     return {

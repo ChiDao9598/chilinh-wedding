@@ -69,7 +69,7 @@ export const audio = (() => {
             music.innerHTML = statePause;
         };
 
-        document.addEventListener('undangan.open', () => {
+        document.addEventListener('invitation.open', () => {
             music.classList.remove('d-none');
 
             if (playOnOpen) {

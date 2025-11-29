@@ -32,7 +32,7 @@ export const admin = (() => {
         document.getElementById('dashboard-tenorkey').value = res.data.tenor_key;
 
         storage('config').set('tenor_key', res.data.tenor_key);
-        document.dispatchEvent(new Event('undangan.session'));
+        document.dispatchEvent(new Event('invitation.session'));
 
         request(HTTP_GET, '/api/stats').token(session.getToken()).withCache(1000 * 30).withForceCache().send().then((resp) => {
             document.getElementById('count-comment').textContent = String(resp.data.comments).replace(/\B(?=(\d{3})+(?!\d))/g, '.');

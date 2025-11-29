@@ -50,7 +50,7 @@ export const progress = (() => {
         if (loaded === total) {
             valid = false;
             cancelProgress = null;
-            document.dispatchEvent(new Event('undangan.progress.done'));
+            document.dispatchEvent(new Event('invitation.progress.done'));
         }
     };
 
@@ -63,7 +63,7 @@ export const progress = (() => {
             valid = false;
             bar.style.backgroundColor = 'red';
             info.innerText = `Error loading ${type} ${showInformation()}`;
-            document.dispatchEvent(new Event('undangan.progress.invalid'));
+            document.dispatchEvent(new Event('invitation.progress.invalid'));
         }
     };
 
@@ -79,7 +79,7 @@ export const progress = (() => {
         info = document.getElementById('progress-info');
         bar = document.getElementById('progress-bar');
         info.classList.remove('d-none');
-        cancelProgress = new Promise((res) => document.addEventListener('undangan.progress.invalid', res));
+        cancelProgress = new Promise((res) => document.addEventListener('invitation.progress.invalid', res));
     };
 
     return {

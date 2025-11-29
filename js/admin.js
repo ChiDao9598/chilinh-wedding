@@ -1,5 +1,5 @@
 import { admin } from './app/admin/admin.js';
 
 ((w) => {
-    w.undangan = admin.init();
+    w.invitation = admin.init();
 })(window);

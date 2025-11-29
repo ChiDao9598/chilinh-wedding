@@ -78,7 +78,7 @@ export const like = (() => {
      * @returns {HTMLElement|null}
      */
     const getButtonLike = (uuid) => {
-        return document.querySelector(`button[onclick="undangan.comment.like.love(this)"][data-uuid="${uuid}"]`);
+        return document.querySelector(`button[onclick="invitation.comment.like.love(this)"][data-uuid="${uuid}"]`);
     };
 
     /**
