@@ -1,6 +1,7 @@
 import { progress } from './progress.js';
 import { util } from '../../common/util.js';
 import { cache } from '../../connection/cache.js';
+import { device } from '../../common/device.js';
 import { HTTP_GET, request, HTTP_STATUS_OK, HTTP_STATUS_PARTIAL_CONTENT } from '../../connection/request.js';
 
 export const video = (() => {
@@ -27,6 +28,22 @@ export const video = (() => {
             return Promise.resolve();
         }
 
+        // On mobile, delay video loading or use simpler approach
+        if (device.isLowEndDevice()) {
+            // Skip video on low-end devices or provide a poster image
+            const posterSrc = wrap.getAttribute('data-poster');
+            if (posterSrc) {
+                const img = document.createElement('img');
+                img.src = posterSrc;
+                img.className = wrap.getAttribute('data-vid-class');
+                img.alt = 'Video thumbnail';
+                wrap.appendChild(img);
+            }
+            progress.complete('invitation', true);
+            progress.complete('video', true);
+            return Promise.resolve();
+        }
+
         const vid = document.createElement('video');
         vid.className = wrap.getAttribute('data-vid-class');
         vid.loop = true;
@@ -34,7 +51,7 @@ export const video = (() => {
         vid.controls = false;
         vid.autoplay = false;
         vid.playsInline = true;
-        vid.preload = 'metadata';
+        vid.preload = device.isMobile() ? 'none' : 'metadata'; // Less aggressive preload on mobile
 
         const observer = new IntersectionObserver((es) => es.forEach((e) => e.isIntersecting ? vid.play() : vid.pause()));
 

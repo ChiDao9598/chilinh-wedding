@@ -1,6 +1,7 @@
 import { progress } from './progress.js';
 import { util } from '../../common/util.js';
 import { cache } from '../../connection/cache.js';
+import { device } from '../../common/device.js';
 
 export const audio = (() => {
 
@@ -25,11 +26,18 @@ export const audio = (() => {
         let audioEl = null;
 
         try {
-            audioEl = new Audio(await cache('audio').withForceCache().get(url, progress.getAbort()));
+            // On mobile, use simpler approach - direct URL instead of caching
+            if (device.isMobile()) {
+                audioEl = new Audio(url);
+            } else {
+                audioEl = new Audio(await cache('audio').withForceCache().get(url, progress.getAbort()));
+            }
+            
             audioEl.loop = true;
             audioEl.muted = false;
             audioEl.autoplay = false;
             audioEl.controls = false;
+            audioEl.preload = device.isMobile() ? 'none' : 'auto'; // Don't preload on mobile
 
             progress.complete('audio');
         } catch {
@@ -50,6 +58,11 @@ export const audio = (() => {
 
             music.disabled = true;
             try {
+                // On mobile, load audio only when user wants to play
+                if (device.isMobile() && audioEl.readyState === 0) {
+                    audioEl.load();
+                }
+                
                 await audioEl.play();
                 isPlay = true;
                 music.disabled = false;

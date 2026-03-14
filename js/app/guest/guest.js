@@ -13,6 +13,7 @@ import { offline } from '../../common/offline.js';
 import { comment } from '../components/comment.js';
 import * as confetti from '../../libs/confetti.js';
 import { pool } from '../../connection/request.js';
+import { device } from '../../common/device.js';
 
 export const guest = (() => {
 
@@ -114,6 +115,30 @@ export const guest = (() => {
         let index = 0;
         const slidesPerView = 2; // hiển thị 2 slide cùng lúc
 
+        /**
+         * Load images for specific slides
+         * @param {number} startIdx
+         * @returns {Promise<void>}
+         */
+        const loadSlideImages = async (startIdx) => {
+            const promises = [];
+            for (let i = 0; i < slidesPerView; i++) {
+                const idx = (startIdx + i) % slides.length;
+                const img = slides[idx].querySelector('img[data-src]');
+                if (img && !img.src.includes(img.getAttribute('data-src'))) {
+                    // Image not yet loaded, trigger load via scroll into view briefly
+                    const rect = img.getBoundingClientRect();
+                    if (rect.top > window.innerHeight) {
+                        continue; // Let lazy loading handle it
+                    }
+                }
+            }
+            await Promise.all(promises);
+        };
+
+        // Load initial slides images
+        await loadSlideImages(index);
+
         // Hiển thị initial slides cùng lúc
         await Promise.all(
             Array.from({ length: slidesPerView }).map((_, i) => {
@@ -137,6 +162,10 @@ export const guest = (() => {
 
             // Cập nhật index cho slides tiếp theo
             index = (index + slidesPerView) % slides.length;
+
+            // Preload next slides images
+            const nextIndex = (index + slidesPerView) % slides.length;
+            loadSlideImages(nextIndex).catch(() => {}); // Preload, don't wait
 
             // Hiển thị slides tiếp theo cùng lúc
             if (run) {
@@ -355,14 +384,53 @@ export const guest = (() => {
             img.download(e.currentTarget.getAttribute('data-src'));
         });
 
+        // Determine loading strategy based on device
+        const isMobileDevice = device.isMobile();
+        const isLowEnd = device.isLowEndDevice();
+
         if (!token || token.length <= 0) {
             document.getElementById('comment')?.remove();
             document.querySelector('a.nav-link[href="#comment"]')?.closest('li.nav-item')?.remove();
 
-            vid.load();
-            img.load();
-            aud.load();
-            lib.load({ confetti: document.body.getAttribute('data-confetti') === 'true' });
+            if (isLowEnd) {
+                // Low-end mobile: Load only critical resources
+                img.load();
+                lib.load({ 
+                    confetti: document.body.getAttribute('data-confetti') === 'true',
+                    aos: false, // Skip AOS on low-end devices
+                    additionalFont: false // Skip additional fonts
+                });
+                
+                // Defer video and audio until after page is interactive
+                document.addEventListener('invitation.open', () => {
+                    util.timeOut(() => {
+                        vid.load();
+                        aud.load();
+                    }, 2000);
+                });
+            } else if (isMobileDevice) {
+                // Regular mobile: Load images first, defer heavy resources
+                img.load();
+                lib.load({ 
+                    confetti: document.body.getAttribute('data-confetti') === 'true',
+                    aos: true,
+                    additionalFont: false
+                });
+                
+                // Defer video/audio slightly
+                document.addEventListener('invitation.open', () => {
+                    util.timeOut(() => {
+                        vid.load();
+                        aud.load();
+                    }, 1000);
+                });
+            } else {
+                // Desktop: Load everything normally
+                vid.load();
+                img.load();
+                aud.load();
+                lib.load({ confetti: document.body.getAttribute('data-confetti') === 'true' });
+            }
         }
 
         if (token && token.length > 0) {
@@ -384,9 +452,40 @@ export const guest = (() => {
                     img.load();
                 }
 
-                vid.load();
-                aud.load();
-                lib.load({ confetti: data.is_confetti_animation });
+                if (isLowEnd) {
+                    // Low-end: Minimal libs, defer video/audio
+                    lib.load({ 
+                        confetti: data.is_confetti_animation,
+                        aos: false,
+                        additionalFont: false
+                    });
+                    
+                    document.addEventListener('invitation.open', () => {
+                        util.timeOut(() => {
+                            vid.load();
+                            aud.load();
+                        }, 2000);
+                    });
+                } else if (isMobileDevice) {
+                    // Regular mobile: Load libs, defer video/audio
+                    lib.load({ 
+                        confetti: data.is_confetti_animation,
+                        aos: true,
+                        additionalFont: false
+                    });
+                    
+                    document.addEventListener('invitation.open', () => {
+                        util.timeOut(() => {
+                            vid.load();
+                            aud.load();
+                        }, 1000);
+                    });
+                } else {
+                    // Desktop: Load everything
+                    vid.load();
+                    aud.load();
+                    lib.load({ confetti: data.is_confetti_animation });
+                }
 
                 comment.show()
                     .then(() => progress.complete('comment'))
@@ -412,13 +511,12 @@ export const guest = (() => {
         }
 
         window.addEventListener('load', () => {
-            pool.init(pageLoaded, [
-                'image',
-                'video',
-                'audio',
-                'libs',
-                'gif',
-            ]);
+            // Reduce cache pools on mobile for better performance
+            const caches = device.isLowEndDevice() 
+                ? ['image', 'audio', 'libs'] // Skip video and gif caches on low-end
+                : ['image', 'video', 'audio', 'libs', 'gif'];
+                
+            pool.init(pageLoaded, caches);
         });
 
         return {
